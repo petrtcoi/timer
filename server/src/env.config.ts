@@ -12,7 +12,7 @@ enum Environment {
 export function dotenvConfig ()  {
   const environment = getEnvironment()
   if (environment === null) throw new Error(`Нет конфигурации`)
-  if (environment === Environment.Production) return
+  // if (environment === Environment.Production) return
   dotenv.config({
     path: path.resolve(process.cwd(), `./src/config/.env.${environment}`),
   });

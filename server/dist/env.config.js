@@ -16,8 +16,7 @@ function dotenvConfig() {
     const environment = getEnvironment();
     if (environment === null)
         throw new Error(`Нет конфигурации`);
-    if (environment === Environment.Production)
-        return;
+    // if (environment === Environment.Production) return
     dotenv_1.default.config({
         path: path_1.default.resolve(process.cwd(), `./src/config/.env.${environment}`),
     });
