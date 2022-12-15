@@ -1,14 +1,12 @@
 import { Request, Response } from "express"
 
 import { ApiError } from "../../types/apiError"
-import { timersStorage } from "./utils/timersStorage"
+import { auctions } from "./auctions/auctionsStorage"
 
-const timers = timersStorage.init()
 
 type DeleteRequestParams = {
   auctionId: string
 }
-
 
 
 const deleteTimer = async (req: Request<DeleteRequestParams>, res: Response<string | ApiError>) => {
@@ -18,7 +16,7 @@ const deleteTimer = async (req: Request<DeleteRequestParams>, res: Response<stri
     res.status(400).send({ error: 'Не указан ID аукциона в запросе' })
     return
   }
-  timers.removeStorageTimer(auctionId)
+  auctions.removeStorageAuction(auctionId)
   res.status(200).send(`timer ${auctionId} removed!`)
 }
 

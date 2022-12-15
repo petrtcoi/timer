@@ -1,9 +1,10 @@
 import { Request, Response } from "express"
+import { auctions } from "./auctions/auctionsStorage"
 
-import { TimerState } from "./utils/timer"
+import { TimerState } from "./auctions/auctionTimer"
 import { ApiError } from "../../types/apiError"
-import { timersStorage } from "./utils/timersStorage"
-const timers = timersStorage.init()
+
+
 
 type GetRequestParams = {
   auctionId: string
@@ -18,11 +19,8 @@ const get = async (req: Request<GetRequestParams>, res: Response<TimerState | Ap
     res.status(400).send({ error: 'Не указан ID аукциона в запросе' })
     return
   }
-  console.log('start')
-  const timer = timers.getStorageTimer(auctionId)
-  console.log('timer: ', timer)
-  const data = await timer.getSyncData()
-  console.log('data: ', data)
+  const auction = auctions.getStorageAuction(auctionId)
+  const data = await auction.getSyncData()
   res.status(200).send(data)
 }
 
