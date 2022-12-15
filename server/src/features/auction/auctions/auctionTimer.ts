@@ -1,4 +1,7 @@
 import EventEmmiter from 'events'
+import { wss } from './../../../index'
+import { participants } from '../participants/participantsStorage'
+
 
 const LOOP_DURATION_SECONDS = 60 * 2
 const ONE_SECOND = 1000
@@ -32,7 +35,9 @@ export const getTimer = (auctionId: string): AuctionTimer => {
   const auctionEvents = new EventEmmiter()
   const emitSecondsPassed = () => {
     console.log(auctionId, timerState.secondsPassed)
-    auctionEvents.emit(TimerEvents.NextSecond, timerState.secondsPassed)
+    auctionEvents.emit(TimerEvents.NextSecond, auctionId, timerState.secondsPassed)
+    const wsList = participants.getAuctionParticipants(auctionId)
+    wsList.forEach(ws => ws.send(JSON.stringify({auctionId, seconds: timerState.secondsPassed})))
   }
 
 
@@ -45,7 +50,6 @@ export const getTimer = (auctionId: string): AuctionTimer => {
   function start(): TimerState {
     timerState = { ...drop(), status: TimerStatus.Working }
 
-    emitSecondsPassed()
     const incrementSecondsLoop = () => {
       timerTimeout = setTimeout(() => {
         timerState =
@@ -56,6 +60,8 @@ export const getTimer = (auctionId: string): AuctionTimer => {
         incrementSecondsLoop()
       }, ONE_SECOND)
     }
+
+    emitSecondsPassed()
     incrementSecondsLoop()
 
     return getData()

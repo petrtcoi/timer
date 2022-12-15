@@ -1,14 +1,12 @@
 import { Request, Response } from "express"
 
-import { TimerState } from "./utils/timer"
+import { TimerState } from "./auctions/auctionTimer"
 import { ApiError } from "../../types/apiError"
-import { timersStorage } from "./utils/timersStorage"
-const timers = timersStorage.init()
+import { auctions } from "./auctions/auctionsStorage"
 
 type StartRequestParams = {
   auctionId: string
 }
-
 
 
 const start = async (req: Request<StartRequestParams>, res: Response<TimerState | ApiError>) => {
@@ -19,9 +17,9 @@ const start = async (req: Request<StartRequestParams>, res: Response<TimerState 
     return
   }
 
-  const timer = timers.getStorageTimer(auctionId)
-  timer.start()
-  res.status(200).send(timer.getData())
+  const auction = auctions.getStorageAuction(auctionId)
+  auction.start()
+  res.status(200).send(auction.getData())
 }
 
 

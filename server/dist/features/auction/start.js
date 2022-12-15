@@ -9,16 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const timersStorage_1 = require("./utils/timersStorage");
-const timers = timersStorage_1.timersStorage.init();
+const auctionsStorage_1 = require("./auctions/auctionsStorage");
 const start = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const auctionId = req.params.auctionId;
     if (!auctionId) {
         res.status(400).send({ error: 'Не указан ID аукциона в запросе' });
         return;
     }
-    const timer = timers.getStorageTimer(auctionId);
-    timer.start();
-    res.status(200).send(timer.getData());
+    const auction = auctionsStorage_1.auctions.getStorageAuction(auctionId);
+    auction.start();
+    res.status(200).send(auction.getData());
 });
 exports.default = start;

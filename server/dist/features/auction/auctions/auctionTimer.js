@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTimer = exports.TimerEvents = exports.TimerStatus = void 0;
 const events_1 = __importDefault(require("events"));
+const participantsStorage_1 = require("../participants/participantsStorage");
 const LOOP_DURATION_SECONDS = 60 * 2;
 const ONE_SECOND = 1000;
 var TimerStatus;
@@ -31,7 +32,9 @@ const getTimer = (auctionId) => {
     const auctionEvents = new events_1.default();
     const emitSecondsPassed = () => {
         console.log(auctionId, timerState.secondsPassed);
-        auctionEvents.emit(TimerEvents.NextSecond, timerState.secondsPassed);
+        auctionEvents.emit(TimerEvents.NextSecond, auctionId, timerState.secondsPassed);
+        const wsList = participantsStorage_1.participants.getAuctionParticipants(auctionId);
+        wsList.forEach(ws => ws.send(JSON.stringify({ auctionId, seconds: timerState.secondsPassed })));
     };
     /** Данные таймера */
     const getData = () => {
@@ -40,7 +43,6 @@ const getTimer = (auctionId) => {
     /** Запуск таймера */
     function start() {
         timerState = Object.assign(Object.assign({}, drop()), { status: TimerStatus.Working });
-        emitSecondsPassed();
         const incrementSecondsLoop = () => {
             timerTimeout = setTimeout(() => {
                 timerState =
@@ -51,6 +53,7 @@ const getTimer = (auctionId) => {
                 incrementSecondsLoop();
             }, ONE_SECOND);
         };
+        emitSecondsPassed();
         incrementSecondsLoop();
         return getData();
     }
