@@ -1,3 +1,4 @@
+import app from "../../app"
 
 const LOOP_DURATION = 1000 * 60 * 2
 const ONE_SECOND = 1000
@@ -15,40 +16,65 @@ type TimerData = {
 type GetTimerReturn = {
   getTimerData: () => TimerData,
   dropTimer: () => TimerData
+  launchTimer: () => TimerData
 }
 
 
 export const getTimer = (): GetTimerReturn => {
 
-  let startAt = Date.now()
-  let status: TimerStatus = TimerStatus.Working
-  let secondsLeft = 0
-  let timerSecondsLeft: any
+  let status: TimerStatus = TimerStatus.Stopped
+  let startAt: number
+  let secondsLeft: number
+  let timerMainLoop: any
+  let timerSecondsLoop: any
 
 
-  const incrementSecondsLeftLoop = () => {
-    setTimeout(() => {
-      secondsLeft += 1
+
+  /**
+   * Запускает таймер - запускает циклы setTimeout для 2 минутного цикла и секундного цикла внутри
+   */
+  const launchTimer = () => {
+    startAt = Date.now()
+    secondsLeft = 0
+    status = TimerStatus.Working
+
+    const incrementSecondsLeftLoop = () => {
+      timerSecondsLoop = setTimeout(() => {
+        secondsLeft += 1
+        app.emit('tick', [secondsLeft, status])
+        incrementSecondsLeftLoop()
+      }, ONE_SECOND)
+    }
+    const dropSecondsLeft = () => {
       incrementSecondsLeftLoop()
-    }, ONE_SECOND)
+      timerMainLoop = setTimeout(() => {
+        secondsLeft = 0
+        dropSecondsLeft()
+      }, LOOP_DURATION)
+    }
+    dropSecondsLeft()
+    return getTimerData()
   }
-  const dropSecondsLeft = () => {
-    incrementSecondsLeftLoop()
-    timerSecondsLeft = setTimeout(() => {
-      secondsLeft = 0
-      dropSecondsLeft()
-    }, LOOP_DURATION)
+
+
+  /**
+   * Передает текущие данные таймера
+   */
+  const getTimerData = () => {
+    return { status, startAt, secondsLeft, loopDurationMs: LOOP_DURATION }
   }
-  dropSecondsLeft()
 
-
-
-  const getTimerData = () => { return { status, startAt, secondsLeft, loopDurationMs: LOOP_DURATION } }
+  
+  /**
+   * Сбрасывает таймер - переводит статус в неработающий, очищает все таймеры
+   */
   const dropTimer = () => {
-    clearTimeout(timerSecondsLeft)
+    clearTimeout(timerMainLoop)
+    clearTimeout(timerSecondsLoop)
     status = TimerStatus.Stopped
     return getTimerData()
   }
 
-  return { dropTimer, getTimerData }
+
+  return { dropTimer, getTimerData, launchTimer }
 }

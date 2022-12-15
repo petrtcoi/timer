@@ -8,7 +8,7 @@ dotenvConfig()
 Object.freeze(Object.prototype)
 const app: Express = express()
 
-const { getTimerData, dropTimer } = getTimer()
+const { getTimerData, dropTimer, launchTimer } = getTimer()
 
 // MIDDLEWARE
 app.use(cors())
@@ -20,18 +20,39 @@ app.get('/', (_, res) => {
 })
 
 
+
+app.post('/timer', (_, res) => {
+  res.status(200).send(launchTimer())
+})
 app.get('/timer', (_, res) => {
-  res.status(200).send({
-    timer: getTimerData(),
-    status: TimerStatus.Working
-  })
+  res.status(200).send(getTimerData())
 })
 app.delete('/timer', (_, res) => {
   dropTimer()
-  res.status(200).send({
-    timer: getTimerData(),
-    status: TimerStatus.Stopped
-  })
+  app.removeAllListeners('tick')
+  res.status(200).send(getTimerData())
+})
+
+
+/**
+ * Учет секунд ведется на стороне сервера и передается клиенту через SSE
+ */
+app.get('/timer_emit', (_, res) => {
+  const { status } = getTimerData()
+  if (status === TimerStatus.Working) {
+    res.set({
+      'Cache-Control': 'no-cache',
+      'Content-Type': 'text/event-stream',
+      'Connection': 'keep-alive'
+    })
+    res.flushHeaders()
+    app.on('tick', (data) => {
+      res.status(200)
+        .write(`seconds: ${data}\n`)
+    })
+    return
+  }
+  res.status(500).send('Timer was stopped')
 })
 
 
