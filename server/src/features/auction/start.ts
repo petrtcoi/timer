@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
 
-import { TimerState } from "./auctions/auctionTimer"
+import { TimerState } from "./timer/auctionTimer"
 import { ApiError } from "../../types/apiError"
-import { auctions } from "./auctions/auctionsStorage"
+import { auctions } from "./auctions/auctionsStore"
 
 type StartRequestParams = {
   auctionId: string
@@ -17,7 +17,7 @@ const start = async (req: Request<StartRequestParams>, res: Response<TimerState 
     return
   }
 
-  const auction = auctions.getStorageAuction(auctionId)
+  const auction = auctions.getAuction(auctionId)
   auction.start()
   res.status(200).send(auction.getData())
 }

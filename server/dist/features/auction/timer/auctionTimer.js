@@ -27,15 +27,10 @@ var TimerEvents;
     TimerEvents["NextSecond"] = "NextSecond";
 })(TimerEvents = exports.TimerEvents || (exports.TimerEvents = {}));
 const getTimer = (auctionId) => {
-    let timerState = getInitTimerState();
+    let timerState = getInitTimerState(auctionId);
     let timerTimeout;
     const auctionEvents = new events_1.default();
-    const emitSecondsPassed = () => {
-        console.log(auctionId, timerState.secondsPassed);
-        auctionEvents.emit(TimerEvents.NextSecond, auctionId, timerState.secondsPassed);
-        const wsList = participantsStorage_1.participants.getAuctionParticipants(auctionId);
-        wsList.forEach(ws => ws.send(JSON.stringify({ auctionId, seconds: timerState.secondsPassed })));
-    };
+    const emitSecondsPassed = getEmitSecondsPassed(auctionEvents);
     /** Данные таймера */
     const getData = () => {
         return timerState;
@@ -43,18 +38,8 @@ const getTimer = (auctionId) => {
     /** Запуск таймера */
     function start() {
         timerState = Object.assign(Object.assign({}, drop()), { status: TimerStatus.Working });
-        const incrementSecondsLoop = () => {
-            timerTimeout = setTimeout(() => {
-                timerState =
-                    (timerState.secondsPassed < (LOOP_DURATION_SECONDS - 1))
-                        ? addSecond(timerState)
-                        : newLoop(timerState);
-                emitSecondsPassed();
-                incrementSecondsLoop();
-            }, ONE_SECOND);
-        };
-        emitSecondsPassed();
-        incrementSecondsLoop();
+        emitSecondsPassed(timerState);
+        runTimerLoop();
         return getData();
     }
     /** Сброс таймера */
@@ -72,11 +57,23 @@ const getTimer = (auctionId) => {
             return getData();
         });
     }
-    return { getData, getSyncData, start, drop, auctionEvents };
+    /**  Бесконечный цикл отсчета секунд */
+    function runTimerLoop() {
+        timerTimeout = setTimeout(() => {
+            timerState =
+                (timerState.secondsPassed < (LOOP_DURATION_SECONDS - 1))
+                    ? addSecond(timerState)
+                    : newLoop(timerState);
+            emitSecondsPassed(timerState);
+            runTimerLoop();
+        }, ONE_SECOND);
+    }
+    return { getData, getSyncData, start, drop };
 };
 exports.getTimer = getTimer;
-function getInitTimerState() {
+function getInitTimerState(auctionId) {
     return {
+        auctionId,
         status: TimerStatus.Stopped,
         startAt: Date.now(),
         loopDurationSeconds: LOOP_DURATION_SECONDS,
@@ -93,4 +90,12 @@ function addSecond(state) {
 }
 function newLoop(state) {
     return Object.assign(Object.assign({}, state), { secondsPassed: 0 });
+}
+function getEmitSecondsPassed(auctionEvents) {
+    return function (timerState) {
+        console.log(timerState.auctionId, timerState.secondsPassed);
+        auctionEvents.emit(TimerEvents.NextSecond, timerState.auctionId, timerState.secondsPassed);
+        const wsList = participantsStorage_1.participants.getAuctionParticipants(timerState.auctionId);
+        wsList.forEach(ws => ws.send(JSON.stringify({ auctionId: timerState.auctionId, seconds: timerState.secondsPassed })));
+    };
 }

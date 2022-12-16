@@ -1,36 +1,33 @@
-import EventEmmiter from 'events'
-import { AuctionTimer, getTimer } from './auctionTimer'
+import { AuctionTimer, getTimer } from './../timer/auctionTimer'
+import { AuctionId } from './auction'
 
-type AuctionsStorage = {
-  getStorageAuction: (auctionId: string) => AuctionTimer
-  removeStorageAuction: (auctionId: string) => void
-  getAllEventEmmiters: () => EventEmmiter[]
+type AuctionsStore = {
+  getAuction: (auctionId: string) => AuctionTimer
+  removeAuction: (auctionId: string) => void
 }
 
-
-export const auctions = auctionsStorageFactory().init()
-
+export const auctions = auctionsStoreFactory().init()
 
 
-function auctionsStorageFactory() {
-  let instance: AuctionsStorage
+function auctionsStoreFactory() {
+  let instance: AuctionsStore
   return {
     init: () => {
-      if (!instance) instance = _auctionsStorage()
+      if (!instance) instance = _auctionsStore()
       return instance
     }
   }
 }
 
 
-function _auctionsStorage() {
-  let auctions = new Map<string, AuctionTimer>()
+function _auctionsStore() {
+  let auctions = new Map<AuctionId, AuctionTimer>()
 
   /**
    *  Проверяет, создан ли уже такой аукцион. Возвращает его.
    *  Логика, что делать, если таймера / аукциона не существует, здесь опущена. Просто создаем новый аукцион
    */
-  function getStorageAuction(auctionId: string): AuctionTimer {
+  function getAuction(auctionId: string): AuctionTimer {
     const oldAuction = auctions.get(auctionId)
     if (oldAuction !== undefined) {
       return oldAuction
@@ -43,22 +40,17 @@ function _auctionsStorage() {
   /**
   *  Просто сбрасываем таймеры и удаляем аукцион из хранилища
   */
-  function removeStorageAuction(auctionId: string): void {
+  function removeAuction(auctionId: string): void {
     const oldAuction = auctions.get(auctionId)
     console.log('oldAuction : ', oldAuction)
     if (oldAuction !== undefined) oldAuction.drop()
     auctions.delete(auctionId)
   }
 
-  /**
-   * Список EventEmmiters
-   */
-  function getAllEventEmmiters() {
-    return Array.from(auctions.values()).map(auction => auction.auctionEvents)
-  }
 
 
-  return { getStorageAuction, removeStorageAuction, getAllEventEmmiters }
+
+  return { getAuction, removeAuction }
 
 }
 

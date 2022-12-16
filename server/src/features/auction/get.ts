@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
-import { auctions } from "./auctions/auctionsStorage"
+import { auctions } from "./auctions/auctionsStore"
 
-import { TimerState } from "./auctions/auctionTimer"
+import { TimerState } from "./timer/auctionTimer"
 import { ApiError } from "../../types/apiError"
 
 
@@ -19,7 +19,7 @@ const get = async (req: Request<GetRequestParams>, res: Response<TimerState | Ap
     res.status(400).send({ error: 'Не указан ID аукциона в запросе' })
     return
   }
-  const auction = auctions.getStorageAuction(auctionId)
+  const auction = auctions.getAuction(auctionId)
   const data = await auction.getSyncData()
   res.status(200).send(data)
 }

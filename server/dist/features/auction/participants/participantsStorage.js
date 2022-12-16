@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.participants = void 0;
-const someResult_1 = require("../../../types/someResult");
-const auctionsStorage_1 = require("./../auctions/auctionsStorage");
+const result_1 = require("../../../types/result");
+const auctionsStore_1 = require("./../auctions/auctionsStore");
 exports.participants = participantsStorageFactory().init();
 function participantsStorageFactory() {
     let instance;
@@ -20,16 +20,16 @@ function _participantsStorage() {
      * Добавляем websocket в аукцион
      */
     function addToAuction(ws, auctionId) {
-        const auction = auctionsStorage_1.auctions.getStorageAuction(auctionId);
+        const auction = auctionsStore_1.auctions.getAuction(auctionId);
         if (!auction)
-            return someResult_1.SomeResult.Error;
+            return [result_1.ResultType.Error, 'Не удалось удалить'];
         const auctionParticipants = participants.get(auctionId);
         if (!auctionParticipants) {
             participants.set(auctionId, new Map([[ws, true]]));
-            return someResult_1.SomeResult.Ok;
+            return [result_1.ResultType.Ok, ''];
         }
         auctionParticipants.set(ws, true);
-        return someResult_1.SomeResult.Ok;
+        return [result_1.ResultType.Ok, ''];
     }
     /**
      * Удаляем websoket из аукциона
@@ -37,9 +37,9 @@ function _participantsStorage() {
     function removeFromAction(ws, auctionId) {
         const auctionParticipants = participants.get(auctionId);
         if (!auctionParticipants)
-            return someResult_1.SomeResult.Skip;
+            return [result_1.ResultType.Skipped, ''];
         auctionParticipants.delete(ws);
-        return someResult_1.SomeResult.Ok;
+        return [result_1.ResultType.Ok, ''];
     }
     /**
      * Удаляем websoket из всех аукционов
@@ -48,7 +48,7 @@ function _participantsStorage() {
         participants.forEach(auctionParticipants => {
             auctionParticipants.delete(ws);
         });
-        return someResult_1.SomeResult.Ok;
+        return [result_1.ResultType.Ok, ''];
     }
     /**
      * Массив websocket для данного аукциона

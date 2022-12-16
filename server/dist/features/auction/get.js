@@ -9,14 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const auctionsStorage_1 = require("./auctions/auctionsStorage");
+const auctionsStore_1 = require("./auctions/auctionsStore");
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const auctionId = req.params.auctionId;
     if (!auctionId) {
         res.status(400).send({ error: 'Не указан ID аукциона в запросе' });
         return;
     }
-    const auction = auctionsStorage_1.auctions.getStorageAuction(auctionId);
+    const auction = auctionsStore_1.auctions.getAuction(auctionId);
     const data = yield auction.getSyncData();
     res.status(200).send(data);
 });
