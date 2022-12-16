@@ -60,7 +60,7 @@ function _auctionsStore() {
         const auction = auctions.get(auctionId);
         if (!auction)
             return [];
-        return (0, auction_1.getWebsockets)(auction);
+        return auction.activeWebSockets;
     }
     /** Получаем список пользователей */
     function getAuctionParticipants(auctionId) {
@@ -69,12 +69,17 @@ function _auctionsStore() {
             return [];
         return Array.from(auction.participants.values()).map(x => x.userId);
     }
+    /** Список всех аукционов */
+    function listOfAuctions() {
+        return Array.from(auctions.values());
+    }
     return {
         getAuction,
         removeAuction,
         addParticipantToAuction,
         removeParticipantFromAuction,
         getAuctionWebsockets,
-        getAuctionParticipants
+        getAuctionParticipants,
+        listOfAuctions
     };
 }

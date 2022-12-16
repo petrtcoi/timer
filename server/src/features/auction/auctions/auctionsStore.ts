@@ -1,4 +1,4 @@
-import { Auction, AuctionId, getNewAuction, addParticipant, removeParticipant, getWebsockets } from './auction'
+import { Auction, AuctionId, getNewAuction, addParticipant, removeParticipant, getActualWebsockets } from './auction'
 import { JustResult, ResultType } from '../../../types/result'
 import { Participant } from '../participants/participant'
 import { UserId } from '../../users/users'
@@ -11,6 +11,7 @@ type AuctionsStore = {
   removeParticipantFromAuction: (auctionId: AuctionId, userId: UserId) => JustResult
   getAuctionWebsockets: (auctionId: AuctionId) => WebSocket[]
   getAuctionParticipants: (auctionId: AuctionId) => UserId[]
+  listOfAuctions: () => Auction[]
 }
 
 export const auctions = auctionsStoreFactory().init()
@@ -69,6 +70,7 @@ function _auctionsStore() {
     if (!auction) return ResultType.Error
 
     auctions.set(auctionId, removeParticipant(auction, userId))
+
     return ResultType.Ok
   }
 
@@ -76,7 +78,7 @@ function _auctionsStore() {
   function getAuctionWebsockets(auctionId: AuctionId): WebSocket[] {
     const auction = auctions.get(auctionId)
     if (!auction) return []
-    return getWebsockets(auction)
+    return auction.activeWebSockets
   }
 
 
@@ -87,6 +89,11 @@ function _auctionsStore() {
     return Array.from(auction.participants.values()).map(x => x.userId)
   }
 
+  /** Список всех аукционов */
+  function listOfAuctions(): Auction[] {
+    return Array.from(auctions.values())
+  }
+
 
   return {
     getAuction,
@@ -94,7 +101,8 @@ function _auctionsStore() {
     addParticipantToAuction,
     removeParticipantFromAuction,
     getAuctionWebsockets,
-    getAuctionParticipants
+    getAuctionParticipants,
+    listOfAuctions
   }
 
 }

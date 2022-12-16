@@ -1,27 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWebsockets = exports.removeParticipant = exports.addParticipant = exports.getNewAuction = void 0;
+exports.getActualWebsockets = exports.removeParticipant = exports.addParticipant = exports.getNewAuction = void 0;
 const auctionTimer_1 = require("../timer/auctionTimer");
 function getNewAuction(auctionId) {
     return {
         id: auctionId,
         timer: (0, auctionTimer_1.getTimer)(auctionId),
-        participants: new Map()
+        participants: new Map(),
+        activeWebSockets: []
     };
 }
 exports.getNewAuction = getNewAuction;
 function addParticipant(auction, participant) {
-    return Object.assign(Object.assign({}, auction), { participants: auction.participants.set(participant.userId, participant) });
+    const newParticipants = auction.participants.set(participant.userId, participant);
+    return Object.assign(Object.assign({}, auction), { participants: newParticipants, activeWebSockets: getActualWebsockets(newParticipants) });
 }
 exports.addParticipant = addParticipant;
 function removeParticipant(auction, userId) {
     const { participants } = auction;
     participants.delete(userId);
-    return Object.assign(Object.assign({}, auction), { participants });
+    return Object.assign(Object.assign({}, auction), { participants, activeWebSockets: getActualWebsockets(participants) });
 }
 exports.removeParticipant = removeParticipant;
-function getWebsockets(auction) {
-    const participants = Array.from(auction.participants.values());
-    return participants.map(p => p.ws).filter(Boolean);
+/** Обновляет список актуальных сокетов. Прямое добавление / удаление сокета
+ * из массива было бы быстрее. Но операция не должна быть частой
+ */
+function getActualWebsockets(participants) {
+    return Array
+        .from(participants.values())
+        .map(p => p.ws)
+        .filter(Boolean);
 }
-exports.getWebsockets = getWebsockets;
+exports.getActualWebsockets = getActualWebsockets;
