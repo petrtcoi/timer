@@ -29,19 +29,19 @@ function auctionsStoreFactory() {
 
 
 function _auctionsStore() {
-  let auctions = new Map<AuctionId, Auction>()
+  let auctionsList = new Map<AuctionId, Auction>()
 
   /**
    *  Проверяет, создан ли уже такой аукцион. Возвращает его.
    *  Логика, что делать, если таймера / аукциона не существует, здесь опущена. Просто создаем новый аукцион
    */
   function getAuction(auctionId: string): Auction {
-    const oldAuction = auctions.get(auctionId)
+    const oldAuction = auctionsList.get(auctionId)
     if (oldAuction !== undefined) {
       return oldAuction
     }
     const newAuction = getNewAuction(auctionId)
-    auctions.set(auctionId, newAuction)
+    auctionsList.set(auctionId, newAuction)
     return newAuction
   }
 
@@ -49,34 +49,36 @@ function _auctionsStore() {
   *  Просто сбрасываем таймеры и удаляем аукцион из хранилища
   */
   function removeAuction(auctionId: string): JustResult {
-    const oldAuction = auctions.get(auctionId)
+    const oldAuction = auctionsList.get(auctionId)
     if (oldAuction !== undefined) oldAuction.timer.drop()
-    auctions.delete(auctionId)
+    auctionsList.delete(auctionId)
     return ResultType.Ok
   }
 
   /** Добавляем участника в аукцион */
   function addParticipantToAuction(auctionId: AuctionId, participant: Participant): JustResult {
-    const auction = auctions.get(auctionId)
+    const auction = auctionsList.get(auctionId)
     if (!auction) return ResultType.Error
 
-    auctions.set(auctionId, addParticipant(auction, participant))
+    auctionsList.set(auctionId, addParticipant(auction, participant))
     return ResultType.Ok
   }
 
   /** Удаляем участника из аукциона */
   function removeParticipantFromAuction(auctionId: AuctionId, userId: UserId): JustResult {
-    const auction = auctions.get(auctionId)
+    const auction = auctionsList.get(auctionId)
     if (!auction) return ResultType.Error
 
-    auctions.set(auctionId, removeParticipant(auction, userId))
+    const ws = auction.participants.get(userId)?.ws
+    if (ws) ws.close()
+    auctionsList.set(auctionId, removeParticipant(auction, userId))
 
     return ResultType.Ok
   }
 
   /** Получаем список websocket для уведомлений */
   function getAuctionWebsockets(auctionId: AuctionId): WebSocket[] {
-    const auction = auctions.get(auctionId)
+    const auction = auctionsList.get(auctionId)
     if (!auction) return []
     return auction.activeWebSockets
   }
@@ -84,14 +86,14 @@ function _auctionsStore() {
 
   /** Получаем список пользователей */
   function getAuctionParticipants(auctionId: AuctionId): UserId[] {
-    const auction = auctions.get(auctionId)
+    const auction = auctionsList.get(auctionId)
     if (!auction) return []
     return Array.from(auction.participants.values()).map(x => x.userId)
   }
 
   /** Список всех аукционов */
   function listOfAuctions(): Auction[] {
-    return Array.from(auctions.values())
+    return Array.from(auctionsList.values())
   }
 
 

@@ -2,6 +2,7 @@ import { Server, WebSocket } from "ws"
 import { auctions } from './auctions/auctionsStore'
 
 
+const wsClients = new WeakMap<WebSocket, { isAlive: boolean }>
 
 
 export enum MessageType {
@@ -16,10 +17,14 @@ export default function (server: Server) {
 
   wss.on('connection', function connection(ws) {
 
+    /** Очистка от "мертвых" соединений (см ниже setInterval) */
+    wsClients.set(ws, { isAlive: true })
+    ws.on('pong', () => wsClients.set(ws, { isAlive: true }))
+
+
+    /** Обработка входящих сообщений */
     ws.on('message', function message(data) {
-
       const wsd: WebSocket = ws
-
       const { type, auctionId, userId } = JSON.parse(data as unknown as string)
       if (!type || !auctionId || !userId) return
 
@@ -31,13 +36,27 @@ export default function (server: Server) {
           auctions.removeParticipantFromAuction(auctionId, userId)
           break
       }
-
     })
-    ws.send('something')
+
+
   })
 
+  setInterval(() => {
+    wss.clients.forEach(ws => {
+      const savedWs = wsClients.get(ws)
+      if (!savedWs || savedWs.isAlive === false) {
+        wsClients.delete(ws)
+        ws.terminate()
+        return
+      }
+      wsClients.set(ws, { isAlive: false })
+      ws.ping()
+    })
+  }, 10000)
 
 
 
   return wss
 }
+
+

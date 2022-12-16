@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageType = void 0;
 const ws_1 = require("ws");
 const auctionsStore_1 = require("./auctions/auctionsStore");
+const wsClients = new WeakMap;
 var MessageType;
 (function (MessageType) {
     MessageType["SubscribeAuction"] = "SubscribeAuction";
@@ -11,6 +12,10 @@ var MessageType;
 function default_1(server) {
     const wss = new ws_1.WebSocket.Server({ noServer: true });
     wss.on('connection', function connection(ws) {
+        /** Очистка от "мертвых" соединений (см ниже setInterval) */
+        wsClients.set(ws, { isAlive: true });
+        ws.on('pong', () => wsClients.set(ws, { isAlive: true }));
+        /** Обработка входящих сообщений */
         ws.on('message', function message(data) {
             const wsd = ws;
             const { type, auctionId, userId } = JSON.parse(data);
@@ -25,8 +30,19 @@ function default_1(server) {
                     break;
             }
         });
-        ws.send('something');
     });
+    setInterval(() => {
+        wss.clients.forEach(ws => {
+            const savedWs = wsClients.get(ws);
+            if (!savedWs || savedWs.isAlive === false) {
+                wsClients.delete(ws);
+                ws.terminate();
+                return;
+            }
+            wsClients.set(ws, { isAlive: false });
+            ws.ping();
+        });
+    }, 10000);
     return wss;
 }
 exports.default = default_1;
