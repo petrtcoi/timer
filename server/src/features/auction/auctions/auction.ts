@@ -9,35 +9,43 @@ export type Auction = {
   id: AuctionId,
   timer: AuctionTimer
   participants: Map<UserId, Participant>
+  activeWebSockets: WebSocket[]
 }
 
 export function getNewAuction(auctionId: AuctionId): Auction {
   return {
     id: auctionId,
     timer: getTimer(auctionId),
-    participants: new Map<UserId, Participant>()
+    participants: new Map<UserId, Participant>(),
+    activeWebSockets: []
   }
 }
 
 export function addParticipant(auction: Auction, participant: Participant): Auction {
+  const newParticipants = auction.participants.set(participant.userId, participant)
   return {
     ...auction,
-    participants:
-      auction.participants.set(participant.userId, participant)
+    participants:newParticipants,
+    activeWebSockets: getActualWebsockets(newParticipants)
   }
 }
 
 export function removeParticipant(auction: Auction, userId: UserId): Auction {
   const { participants } = auction
   participants.delete(userId)
-
   return {
     ...auction,
-    participants
+    participants,
+    activeWebSockets: getActualWebsockets(participants)
   }
 }
 
-export function getWebsockets(auction: Auction): WebSocket[] {
-  const participants = Array.from(auction.participants.values())
-  return participants.map(p => p.ws).filter(Boolean) as WebSocket[]
+/** Обновляет список актуальных сокетов. Прямое добавление / удаление сокета
+ * из массива было бы быстрее. Но операция не должна быть частой
+ */
+export function getActualWebsockets(participants: Auction["participants"]): WebSocket[] {
+  return Array
+    .from(participants.values())
+    .map(p => p.ws)
+    .filter(Boolean) as WebSocket[]
 }
