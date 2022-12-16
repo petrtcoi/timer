@@ -31,24 +31,11 @@ const getTimer = (auctionId) => {
     let timerTimeout;
     const auctionEvents = new events_1.default();
     const emitSecondsPassed = getEmitSecondsPassed(auctionEvents);
-    /** Данные таймера */
-    const getData = () => {
+    /** Возвращаем данные таймера */
+    function getData() {
         return timerState;
-    };
-    /** Запуск таймера */
-    function start() {
-        timerState = Object.assign(Object.assign({}, drop()), { status: TimerStatus.Working });
-        emitSecondsPassed(timerState);
-        runTimerLoop();
-        return getData();
     }
-    /** Сброс таймера */
-    function drop() {
-        clearTimeout(timerTimeout);
-        timerState = Object.assign(Object.assign({}, timerState), { status: TimerStatus.Stopped });
-        return getData();
-    }
-    /** Данные таймера,синхронизированные с переключением секунд */
+    /** Возвращаем данные таймера в момент обновления счетчика */
     function getSyncData() {
         return __awaiter(this, void 0, void 0, function* () {
             if (timerState.status === TimerStatus.Stopped)
@@ -56,6 +43,19 @@ const getTimer = (auctionId) => {
             yield waitForNextSecond(auctionEvents);
             return getData();
         });
+    }
+    /** Сбрасывает таймер в начальное положение и запускает цикл счетчика секунд */
+    function start() {
+        timerState = Object.assign(Object.assign({}, drop()), { status: TimerStatus.Working });
+        emitSecondsPassed(timerState);
+        runTimerLoop();
+        return getData();
+    }
+    /** Останавливает работу таймера, очищает цикл счетчика секунд */
+    function drop() {
+        clearTimeout(timerTimeout);
+        timerState = Object.assign(Object.assign({}, timerState), { status: TimerStatus.Stopped });
+        return getData();
     }
     /**  Бесконечный цикл отсчета секунд */
     function runTimerLoop() {

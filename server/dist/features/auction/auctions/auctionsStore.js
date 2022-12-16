@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.auctions = void 0;
-const auctionTimer_1 = require("./../timer/auctionTimer");
+const auction_1 = require("./auction");
+const result_1 = require("../../../types/result");
 exports.auctions = auctionsStoreFactory().init();
 function auctionsStoreFactory() {
     let instance;
@@ -24,7 +25,7 @@ function _auctionsStore() {
         if (oldAuction !== undefined) {
             return oldAuction;
         }
-        const newAuction = (0, auctionTimer_1.getTimer)(auctionId);
+        const newAuction = (0, auction_1.getNewAuction)(auctionId);
         auctions.set(auctionId, newAuction);
         return newAuction;
     }
@@ -33,10 +34,10 @@ function _auctionsStore() {
     */
     function removeAuction(auctionId) {
         const oldAuction = auctions.get(auctionId);
-        console.log('oldAuction : ', oldAuction);
         if (oldAuction !== undefined)
-            oldAuction.drop();
+            oldAuction.timer.drop();
         auctions.delete(auctionId);
+        return [result_1.ResultType.Ok, ''];
     }
     return { getAuction, removeAuction };
 }

@@ -17,7 +17,7 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     const auction = auctionsStore_1.auctions.getAuction(auctionId);
-    const data = yield auction.getSyncData();
+    const data = yield auction.timer.getSyncData();
     res.status(200).send(data);
 });
 exports.default = get;

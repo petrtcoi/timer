@@ -1,9 +1,9 @@
-import { AuctionTimer, getTimer } from './../timer/auctionTimer'
-import { AuctionId } from './auction'
+import { Auction, AuctionId, getNewAuction } from './auction'
+import { JustResult, ResultType } from '../../../types/result'
 
 type AuctionsStore = {
-  getAuction: (auctionId: string) => AuctionTimer
-  removeAuction: (auctionId: string) => void
+  getAuction: (auctionId: string) => Auction
+  removeAuction: (auctionId: string) => JustResult
 }
 
 export const auctions = auctionsStoreFactory().init()
@@ -21,18 +21,18 @@ function auctionsStoreFactory() {
 
 
 function _auctionsStore() {
-  let auctions = new Map<AuctionId, AuctionTimer>()
+  let auctions = new Map<AuctionId, Auction>()
 
   /**
    *  Проверяет, создан ли уже такой аукцион. Возвращает его.
    *  Логика, что делать, если таймера / аукциона не существует, здесь опущена. Просто создаем новый аукцион
    */
-  function getAuction(auctionId: string): AuctionTimer {
+  function getAuction(auctionId: string): Auction {
     const oldAuction = auctions.get(auctionId)
     if (oldAuction !== undefined) {
       return oldAuction
     }
-    const newAuction = getTimer(auctionId)
+    const newAuction = getNewAuction(auctionId)
     auctions.set(auctionId, newAuction)
     return newAuction
   }
@@ -40,11 +40,11 @@ function _auctionsStore() {
   /**
   *  Просто сбрасываем таймеры и удаляем аукцион из хранилища
   */
-  function removeAuction(auctionId: string): void {
+  function removeAuction(auctionId: string): JustResult {
     const oldAuction = auctions.get(auctionId)
-    console.log('oldAuction : ', oldAuction)
-    if (oldAuction !== undefined) oldAuction.drop()
+    if (oldAuction !== undefined) oldAuction.timer.drop()
     auctions.delete(auctionId)
+    return ResultType.Ok
   }
 
 

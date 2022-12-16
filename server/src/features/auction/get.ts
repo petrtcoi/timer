@@ -20,7 +20,7 @@ const get = async (req: Request<GetRequestParams>, res: Response<TimerState | Ap
     return
   }
   const auction = auctions.getAuction(auctionId)
-  const data = await auction.getSyncData()
+  const data = await auction.timer.getSyncData()
   res.status(200).send(data)
 }
 

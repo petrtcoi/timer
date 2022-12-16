@@ -17,7 +17,7 @@ const start = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     const auction = auctionsStore_1.auctions.getAuction(auctionId);
-    auction.start();
-    res.status(200).send(auction.getData());
+    auction.timer.start();
+    res.status(200).send(auction.timer.getData());
 });
 exports.default = start;

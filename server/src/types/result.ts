@@ -3,5 +3,7 @@ export enum ResultType {
   Error = "Error",
   Skipped = "Skipped"
 }
-type ResultMessage = string
-export type Result = [ResultType, ResultMessage]
+export type Result<T> = { result: ResultType, payload: T }
+export type ResultStr = Result<string>
+
+export type JustResult = ResultType
