@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageType = void 0;
 const ws_1 = require("ws");
-const participantsStorage_1 = require("./participants/participantsStorage");
+const auctionsStore_1 = require("./auctions/auctionsStore");
 var MessageType;
 (function (MessageType) {
     MessageType["SubscribeAuction"] = "SubscribeAuction";
@@ -12,15 +12,16 @@ function default_1(server) {
     const wss = new ws_1.WebSocket.Server({ noServer: true });
     wss.on('connection', function connection(ws) {
         ws.on('message', function message(data) {
-            const { type, auctionId } = JSON.parse(data);
-            if (!type || !auctionId)
+            const wsd = ws;
+            const { type, auctionId, userId } = JSON.parse(data);
+            if (!type || !auctionId || !userId)
                 return;
             switch (type) {
                 case MessageType.SubscribeAuction:
-                    participantsStorage_1.participants.addToAuction(ws, auctionId);
+                    auctionsStore_1.auctions.addParticipantToAuction(auctionId, { userId, ws: wsd });
                     break;
                 case MessageType.LeaveAuction:
-                    participantsStorage_1.participants.removeFromAction(ws, auctionId);
+                    auctionsStore_1.auctions.removeParticipantFromAuction(auctionId, userId);
                     break;
             }
         });

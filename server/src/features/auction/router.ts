@@ -1,8 +1,8 @@
 import express from 'express'
 
-import deleteTimer from './delete'
-import get from './get'
-import start from './start'
+import deleteTimer from './routrerHandlers/delete'
+import get from './routrerHandlers/get'
+import start from './routrerHandlers/start'
 
 
 const router = express.Router()

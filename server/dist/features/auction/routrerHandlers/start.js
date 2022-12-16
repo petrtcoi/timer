@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const auctionsStore_1 = require("./auctions/auctionsStore");
+const auctionsStore_1 = require("../auctions/auctionsStore");
 const start = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const auctionId = req.params.auctionId;
     if (!auctionId) {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 
-import { ApiError } from "../../types/apiError"
-import { auctions } from "./auctions/auctionsStore"
+import { ApiError } from "../../../types/apiError"
+import { auctions } from "./../auctions/auctionsStore"
 
 
 type DeleteRequestParams = {

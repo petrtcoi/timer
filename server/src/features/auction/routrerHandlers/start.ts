@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
+import { ApiError } from "../../../types/apiError"
+import { auctions } from "../auctions/auctionsStore"
+import { TimerState } from "../timer/auctionTimer"
 
-import { TimerState } from "./timer/auctionTimer"
-import { ApiError } from "../../types/apiError"
-import { auctions } from "./auctions/auctionsStore"
 
 type StartRequestParams = {
   auctionId: string

@@ -37,7 +37,44 @@ function _auctionsStore() {
         if (oldAuction !== undefined)
             oldAuction.timer.drop();
         auctions.delete(auctionId);
-        return [result_1.ResultType.Ok, ''];
+        return result_1.ResultType.Ok;
     }
-    return { getAuction, removeAuction };
+    /** Добавляем участника в аукцион */
+    function addParticipantToAuction(auctionId, participant) {
+        const auction = auctions.get(auctionId);
+        if (!auction)
+            return result_1.ResultType.Error;
+        auctions.set(auctionId, (0, auction_1.addParticipant)(auction, participant));
+        return result_1.ResultType.Ok;
+    }
+    /** Удаляем участника из аукциона */
+    function removeParticipantFromAuction(auctionId, userId) {
+        const auction = auctions.get(auctionId);
+        if (!auction)
+            return result_1.ResultType.Error;
+        auctions.set(auctionId, (0, auction_1.removeParticipant)(auction, userId));
+        return result_1.ResultType.Ok;
+    }
+    /** Получаем список websocket для уведомлений */
+    function getAuctionWebsockets(auctionId) {
+        const auction = auctions.get(auctionId);
+        if (!auction)
+            return [];
+        return (0, auction_1.getWebsockets)(auction);
+    }
+    /** Получаем список пользователей */
+    function getAuctionParticipants(auctionId) {
+        const auction = auctions.get(auctionId);
+        if (!auction)
+            return [];
+        return Array.from(auction.participants.values()).map(x => x.userId);
+    }
+    return {
+        getAuction,
+        removeAuction,
+        addParticipantToAuction,
+        removeParticipantFromAuction,
+        getAuctionWebsockets,
+        getAuctionParticipants
+    };
 }

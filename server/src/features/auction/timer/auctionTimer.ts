@@ -1,7 +1,6 @@
 import EventEmmiter from 'events'
 import { AuctionId } from '../auctions/auction'
-import { participants } from '../participants/participantsStorage'
-
+import { auctions } from '../auctions/auctionsStore'
 
 const LOOP_DURATION_SECONDS = 60 * 2
 const ONE_SECOND = 1000
@@ -106,7 +105,8 @@ function getEmitSecondsPassed(auctionEvents: EventEmmiter) {
   return function (timerState: TimerState) {
     console.log(timerState.auctionId, timerState.secondsPassed)
     auctionEvents.emit(TimerEvents.NextSecond, timerState.auctionId, timerState.secondsPassed)
-    const wsList = participants.getAuctionParticipants(timerState.auctionId)
+    const wsList = auctions.getAuctionWebsockets(timerState.auctionId)
     wsList.forEach(ws => ws.send(JSON.stringify({ auctionId: timerState.auctionId, seconds: timerState.secondsPassed })))
   }
 }
+

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const auctionsStore_1 = require("./auctions/auctionsStore");
+const auctionsStore_1 = require("./../auctions/auctionsStore");
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const auctionId = req.params.auctionId;
     if (!auctionId) {
@@ -17,7 +17,8 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     const auction = auctionsStore_1.auctions.getAuction(auctionId);
-    const data = yield auction.timer.getSyncData();
-    res.status(200).send(data);
+    const participants = auctionsStore_1.auctions.getAuctionParticipants(auctionId);
+    const timer = yield auction.timer.getSyncData();
+    res.status(200).send(Object.assign(Object.assign({}, timer), { participants }));
 });
 exports.default = get;

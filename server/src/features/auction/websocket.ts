@@ -1,5 +1,5 @@
 import { Server, WebSocket } from "ws"
-import { participants } from "./participants/participantsStorage"
+import { auctions } from './auctions/auctionsStore'
 
 
 
@@ -18,16 +18,18 @@ export default function (server: Server) {
 
     ws.on('message', function message(data) {
 
-      const { type, auctionId } = JSON.parse(data as unknown as string)
-      if (!type || !auctionId) return
+      const wsd: WebSocket = ws
+
+      const { type, auctionId, userId } = JSON.parse(data as unknown as string)
+      if (!type || !auctionId || !userId) return
 
       switch (type) {
         case MessageType.SubscribeAuction:
-          participants.addToAuction(ws, auctionId)
-          break;
+          auctions.addParticipantToAuction(auctionId, { userId, ws: wsd })
+          break
         case MessageType.LeaveAuction:
-          participants.removeFromAction(ws, auctionId)
-          break;
+          auctions.removeParticipantFromAuction(auctionId, userId)
+          break
       }
 
     })

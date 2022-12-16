@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTimer = exports.TimerEvents = exports.TimerStatus = void 0;
 const events_1 = __importDefault(require("events"));
-const participantsStorage_1 = require("../participants/participantsStorage");
+const auctionsStore_1 = require("../auctions/auctionsStore");
 const LOOP_DURATION_SECONDS = 60 * 2;
 const ONE_SECOND = 1000;
 var TimerStatus;
@@ -95,7 +95,7 @@ function getEmitSecondsPassed(auctionEvents) {
     return function (timerState) {
         console.log(timerState.auctionId, timerState.secondsPassed);
         auctionEvents.emit(TimerEvents.NextSecond, timerState.auctionId, timerState.secondsPassed);
-        const wsList = participantsStorage_1.participants.getAuctionParticipants(timerState.auctionId);
+        const wsList = auctionsStore_1.auctions.getAuctionWebsockets(timerState.auctionId);
         wsList.forEach(ws => ws.send(JSON.stringify({ auctionId: timerState.auctionId, seconds: timerState.secondsPassed })));
     };
 }
