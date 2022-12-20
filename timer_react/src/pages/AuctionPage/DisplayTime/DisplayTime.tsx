@@ -1,10 +1,8 @@
 import React from 'react'
+import { Timer } from '../../../types/timer.type'
 import styles from './displaytime.module.css'
 
-type DisplayTimeProps = {
-  loopDuration: number
-  secondsPassed: number
-}
+type DisplayTimeProps = Timer
 
 const DisplayTime: React.FC<DisplayTimeProps> = (props) => {
 

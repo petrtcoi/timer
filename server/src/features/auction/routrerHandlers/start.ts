@@ -18,7 +18,6 @@ const start = async (req: Request<StartRequestParams>, res: Response<TimerState 
   }
 
   const auction = auctions.getAuction(auctionId)
-  auction.timer.start()
   res.status(200).send(auction.timer.getData())
 }
 

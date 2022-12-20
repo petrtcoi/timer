@@ -26,6 +26,7 @@ function _auctionsStore() {
             return oldAuction;
         }
         const newAuction = (0, auction_1.getNewAuction)(auctionId);
+        newAuction.timer.start();
         auctionsList.set(auctionId, newAuction);
         return newAuction;
     }

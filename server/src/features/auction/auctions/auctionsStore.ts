@@ -41,6 +41,7 @@ function _auctionsStore() {
       return oldAuction
     }
     const newAuction = getNewAuction(auctionId)
+    newAuction.timer.start()
     auctionsList.set(auctionId, newAuction)
     return newAuction
   }
