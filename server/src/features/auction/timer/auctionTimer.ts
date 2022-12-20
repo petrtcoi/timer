@@ -104,7 +104,6 @@ function newLoop(state: TimerState): TimerState {
 
 function getEmitSecondsPassed(auctionEvents: EventEmmiter) {
   return function (timerState: TimerState) {
-    console.log(timerState.auctionId, timerState.secondsPassed)
     auctionEvents.emit(TimerEvents.NextSecond, timerState.auctionId, timerState.secondsPassed)
     const wsList = auctions.getAuctionWebsockets(timerState.auctionId)
     wsList.forEach(ws => ws.send(JSON.stringify({ auctionId: timerState.auctionId, seconds: timerState.secondsPassed })))
