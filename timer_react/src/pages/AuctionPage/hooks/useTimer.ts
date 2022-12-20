@@ -7,8 +7,8 @@ import { TimerDto } from '../../../types/timerDto.type'
 
 const emptyTimer = { loopDuration: 0, secondsPassed: 0 }
 
-// const apiURL = 'http://45.12.18.61/auction'
-const apiUrl = 'http://localhost:3000/auction'
+const apiUrl = 'http://45.12.18.61/auction'
+// const apiUrl = 'http://localhost:3000/auction'
 
 
 
@@ -44,7 +44,6 @@ async function getAuctionData(auctionId: string): Promise<Timer> {
 
 
 function timerFromResult(result: { data: TimerDto }): Timer {
-  console.log(result)
   return ({
     loopDuration: R.view(R.lensProp('loopDurationSeconds'), result.data),
     secondsPassed: R.view(R.lensProp('secondsPassed'), result.data),
