@@ -48,7 +48,6 @@ export const getTimer = (auctionId: AuctionId): AuctionTimer => {
 
   /** Сбрасывает таймер в начальное положение и запускает цикл счетчика секунд */
   function start(): TimerState {
-    dropTimer()
     timerState = { ...getInitTimerState(timerState.auctionId), status: TimerStatus.Working }
     emitSecondsPassed(timerState)
     runTimerLoop()
