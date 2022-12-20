@@ -46,13 +46,13 @@ const getTimer = (auctionId) => {
     }
     /** Сбрасывает таймер в начальное положение и запускает цикл счетчика секунд */
     function start() {
-        timerState = Object.assign(Object.assign({}, drop()), { status: TimerStatus.Working });
+        timerState = Object.assign(Object.assign({}, getInitTimerState(timerState.auctionId)), { status: TimerStatus.Working });
         emitSecondsPassed(timerState);
         runTimerLoop();
         return getData();
     }
     /** Останавливает работу таймера, очищает цикл счетчика секунд */
-    function drop() {
+    function dropTimer() {
         clearTimeout(timerTimeout);
         timerState = Object.assign(Object.assign({}, timerState), { status: TimerStatus.Stopped });
         return getData();
@@ -68,7 +68,7 @@ const getTimer = (auctionId) => {
             runTimerLoop();
         }, ONE_SECOND);
     }
-    return { getData, getSyncData, start, drop };
+    return { getData, getSyncData, start, drop: dropTimer };
 };
 exports.getTimer = getTimer;
 function getInitTimerState(auctionId) {
@@ -93,7 +93,6 @@ function newLoop(state) {
 }
 function getEmitSecondsPassed(auctionEvents) {
     return function (timerState) {
-        console.log(timerState.auctionId, timerState.secondsPassed);
         auctionEvents.emit(TimerEvents.NextSecond, timerState.auctionId, timerState.secondsPassed);
         const wsList = auctionsStore_1.auctions.getAuctionWebsockets(timerState.auctionId);
         wsList.forEach(ws => ws.send(JSON.stringify({ auctionId: timerState.auctionId, seconds: timerState.secondsPassed })));
